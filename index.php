@@ -132,7 +132,7 @@ function woocommerce_esewa_init() {
               'type' => 'checkbox',
               'label' => __( 'Enable logging', 'esewa-woocommerce' ),
               'default' => 'no',
-              'description' => sprintf( __( 'Log eSewa events, inside %swoocommerce/logs/esewa-%s.txt%s', 'esewa-woocommerce' ),
+              'description' => sprintf( __( 'Log eSewa events, inside %swc-logs/esewa-%s.txt%s', 'esewa-woocommerce' ),
                 '<code>',
                 sanitize_file_name( wp_hash( 'esewa' ) ),'</code>'
                 ),
@@ -445,7 +445,7 @@ function woocommerce_esewa_init() {
         $esewa_args_array[] = '<input type="hidden" name="'.esc_attr( $key ).'" value="'.esc_attr( $value ).'" />';
       }
 
-      $woocommerce->add_inline_js( '
+      wc_enqueue_js( '
         jQuery("body").block({
             message: "' . esc_js( __( 'Thank you for your order. We are now redirecting you to eSewa to make payment.', 'esewa-woocommerce' ) ) . '",
             baseZ: 99999,
