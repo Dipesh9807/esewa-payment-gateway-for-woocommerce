@@ -2,8 +2,8 @@
 /*
    Plugin Name: eSewa Payment Gateway for WooCommerce
    Description: Extends WooCommerce with eSewa payment gateway
-   Version: 1.0.1
-   Plugin URI: http://www.nilambar.net
+   Version: 1.0.2
+   Plugin URI: https://wordpress.org/plugins/esewa-payment-gateway-for-woocommerce/
    Author: Nilambar Sharma
    Author URI: http://www.nilambar.net
    License: Under GPL2
