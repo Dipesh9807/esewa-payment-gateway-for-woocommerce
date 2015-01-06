@@ -386,7 +386,7 @@ function woocommerce_esewa_init() {
      */
     function get_esewa_order( $params ) {
 
-      $order_id   = woocommerce_get_order_id_by_order_key( $params['oid'] );
+      $order_id = $params['oid'];
       $order    = new WC_Order( $order_id );
       if (!empty($order)) {
         return $order;
