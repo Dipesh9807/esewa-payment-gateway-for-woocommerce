@@ -1,13 +1,14 @@
 <?php
-/*
-   Plugin Name: eSewa Payment Gateway for WooCommerce
-   Description: Extends WooCommerce with eSewa payment gateway
-   Version: 1.0.2
-   Plugin URI: https://wordpress.org/plugins/esewa-payment-gateway-for-woocommerce/
-   Author: Nilambar Sharma
-   Author URI: http://www.nilambar.net
-   License: Under GPL2
-*/
+/**
+ * Plugin Name: eSewa Payment Gateway for WooCommerce
+ * Plugin URI: https://wordpress.org/plugins/esewa-payment-gateway-for-woocommerce/
+ * Description: Extends WooCommerce with eSewa payment gateway.
+ * Version: 1.0.2
+ * Author: Nilambar Sharma
+ * Author URI: http://www.nilambar.net
+ * License: GPL2
+ * Text Domain: esewa-payment-gateway-for-woocommerce
+ */
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -51,10 +52,10 @@ function woocommerce_esewa_init() {
       // Define user set variables
       $this->title                = $this->get_option( 'title' );
       $this->description          = $this->get_option( 'description' );
-      $this->liveurl              = 'http://esewa.com.np/epay/main';
-      $this->testurl              = 'http://dev.esewa.com.np/epay/main';
-      $this->liveurl_verification = 'http://esewa.com.np/epay/transrec';
-      $this->testurl_verification = 'http://dev.esewa.com.np/epay/transrec';
+      $this->liveurl              = 'https://esewa.com.np/epay/main';
+      $this->testurl              = 'https://dev.esewa.com.np/epay/main';
+      $this->liveurl_verification = 'https://esewa.com.np/epay/transrec';
+      $this->testurl_verification = 'https://dev.esewa.com.np/epay/transrec';
       $this->merchant             = $this->get_option( 'merchant' );
       $this->testmode             = $this->get_option( 'testmode' );
       $this->debug                = $this->get_option( 'debug' );
