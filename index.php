@@ -264,217 +264,233 @@ function woocommerce_esewa_init() {
 
         }
 
-    /**
-     * Check eSewa Response validity
-     **/
-    function check_esewa_response_is_valid() {
-      global $woocommerce;
+        /**
+         * Check eSewa Response validity
+         **/
+        function check_esewa_response_is_valid() {
+            global $woocommerce;
 
-      if ( 'yes' == $this->debug )
-        $this->log->add( 'esewa', 'Checking eSewa response is valid...' );
+            if ( 'yes' == $this->debug ){
+                $this->log->add( 'esewa', 'Checking eSewa response is valid...' );
+            }
 
-      if ( $this->testmode == 'yes' )
-        $esewa_adr = $this->testurl_verification;
-      else
-        $esewa_adr = $this->liveurl_verification;
+            if ( $this->testmode == 'yes' ){
+                $esewa_adr = $this->testurl_verification;
+            }
+            else{
+                $esewa_adr = $this->liveurl_verification;
+            }
 
-      $_REQUEST = stripslashes_deep( $_REQUEST );
+            $_REQUEST = stripslashes_deep( $_REQUEST );
 
-      $params = array(
-        'amt' => $_REQUEST['amt'],
-        'pid' => $_REQUEST['oid'],
-        'rid' => $_REQUEST['refId'],
-        'scd' => $this -> merchant,
-        );
+            $params = array(
+                'amt' => $_REQUEST['amt'],
+                'pid' => $_REQUEST['oid'],
+                'rid' => $_REQUEST['refId'],
+                'scd' => $this -> merchant,
+                );
 
-        if ( 'yes' == $this->debug )
-          $this->log->add( 'esewa', 'Request Parameters: ' . print_r( $params, true ) );
+            if ( 'yes' == $this->debug ){
+                $this->log->add( 'esewa', 'Request Parameters: ' . print_r( $params, true ) );
+            }
 
-      $received_values = $params;
+            $received_values = $params;
 
-       $eparams = array(
-        'body'      => $received_values,
-        'sslverify'   => false,
-        'timeout'     => 60,
-        'httpversion'   => '1.1',
-        'user-agent'  => 'WooCommerce/' . $woocommerce->version
-       );
-       $response = wp_remote_post( $esewa_adr, $eparams );
+            $eparams = array(
+                'body'      => $received_values,
+                'sslverify'   => false,
+                'timeout'     => 60,
+                'httpversion'   => '1.1',
+                'user-agent'  => 'WooCommerce/' . $woocommerce->version
+                );
+            $response = wp_remote_post( $esewa_adr, $eparams );
 
-       if ( 'yes' == $this->debug )
-        $this->log->add( 'esewa', 'eSewa Response: ' . print_r( $response, true ) );
+            if ( 'yes' == $this->debug ){
+                $this->log->add( 'esewa', 'eSewa Response: ' . print_r( $response, true ) );
+            }
 
-      // check to see if the request was valid
-      if ( ! is_wp_error( $response ) && $response['response']['code'] >= 200 && $response['response']['code'] < 300  ) {
-          if ( 'yes' == $this->debug )
-            $this->log->add( 'esewa', 'Received valid response from eSewa' );
+            // check to see if the request was valid.
+            if ( ! is_wp_error( $response ) && $response['response']['code'] >= 200 && $response['response']['code'] < 300  ) {
+                if ( 'yes' == $this->debug ){
+                    $this->log->add( 'esewa', 'Received valid response from eSewa' );
+                }
 
-          // Check response code
-          $body = wp_remote_retrieve_body($response);
-          $esewa_response_code = trim(strip_tags($body));
-          if (!empty($esewa_response_code)) {
-            $esewa_response_code = strtolower($esewa_response_code);
-          }
-          if ('success' == $esewa_response_code) {
-            return true;
-          }
-          return false;
-      }
+                // Check response code.
+                $body = wp_remote_retrieve_body($response);
+                $esewa_response_code = trim(strip_tags($body));
+                if (!empty($esewa_response_code)) {
+                    $esewa_response_code = strtolower($esewa_response_code);
+                }
+                if ('success' == $esewa_response_code) {
+                    return true;
+                }
+                return false;
+            }
 
-      if ( 'yes' == $this->debug ) {
-        $this->log->add( 'esewa', 'Received invalid response from eSewa' );
-        if ( is_wp_error( $response ) )
-          $this->log->add( 'esewa', 'Error response: ' . $response->get_error_message() );
-      }
+            if ( 'yes' == $this->debug ) {
+                $this->log->add( 'esewa', 'Received invalid response from eSewa' );
+                if ( is_wp_error( $response ) ){
+                    $this->log->add( 'esewa', 'Error response: ' . $response->get_error_message() );
+                }
+            }
 
-      return false;
+            return false;
 
-    }
-
-
-    /**
-     * Successful Payment!
-     *
-     * @access public
-     * @param array $posted
-     * @return void
-     */
-    function successful_request(  ) {
-      global $woocommerce;
-
-      $_REQUEST = stripslashes_deep( $_REQUEST );
-
-      $order = $this->get_esewa_order( $_REQUEST );
-
-      if ($order) {
-
-        if ( 'yes' == $this->debug )
-          $this->log->add( 'esewa', 'Found order #' . $order->id );
-
-        $order->payment_complete();
-        $order->add_order_note(__('eSewa payment successful'), 'esewa-payment-gateway-for-woocommerce' );
-        $woocommerce->cart->empty_cart();
-
-      }
-      else{
-
-        if ( 'yes' == $this->debug )
-          $this->log->add( 'esewa', 'Order not found.-'. print_r($_REQUEST, true) );
-
-        $order->update_status( 'on-hold', sprintf( __( 'Error occurred', 'esewa-payment-gateway-for-woocommerce' ) ) );
-
-      }
-
-      if ( 'yes' == $this->debug )
-        $this->log->add( 'esewa', 'Payment complete.' );
-
-      $myaccount_page_id = get_option( 'woocommerce_myaccount_page_id' );
-      if ( $myaccount_page_id ) {
-        $myaccount_page_url = esc_url( get_permalink( $myaccount_page_id ) );
-      }
-      $redirect_url =  add_query_arg(array('q'=>'su', 'order' => $order->id ),$myaccount_page_url) ;
-      wp_redirect( $redirect_url );
-      exit;
-
-    }
-
-    /**
-     * get_esewa_order function.
-     *
-     * @access public
-     * @param mixed $posted
-     * @return void
-     */
-    function get_esewa_order( $params ) {
-
-      $order_id = $params['oid'];
-      $order    = new WC_Order( $order_id );
-      if (!empty($order)) {
-        return $order;
-      }
-      if ( $this->debug=='yes' )
-        $this->log->add( 'esewa', 'Error: Order Key does not match. #'. $params['oid'] );
-      return false;
-    }
+        }
 
 
+        /**
+         * Successful Payment!
+         *
+         * @access public
+         * @param array $posted
+         * @return void
+         */
+        function successful_request(  ) {
+            global $woocommerce;
 
-    /**
-     * Add content to the WC emails.
-     *
-     * @access public
-     * @param WC_Order $order
-     * @param bool $sent_to_admin
-     * @return void
-     */
-    function email_instructions( $order, $sent_to_admin ) {
+            $_REQUEST = stripslashes_deep( $_REQUEST );
 
-      if ( $sent_to_admin ) return;
+            $order = $this->get_esewa_order( $_REQUEST );
 
-      if ( $order->status !== 'on-hold') return;
+            if ($order) {
 
-      if ( $order->payment_method !== 'esewa') return;
+                if ( 'yes' == $this->debug ){
+                    $this->log->add( 'esewa', 'Found order #' . $order->id );
+                }
 
-      if ( $description = $this->get_description() )
-        echo wpautop( wptexturize( $description ) );
-    }
+                $order->payment_complete();
+                $order->add_order_note(__('eSewa payment successful'), 'esewa-payment-gateway-for-woocommerce' );
+                $woocommerce->cart->empty_cart();
 
+            }
+            else{
 
-    /**
-     * Generate the eSewa button link
-     *
-     * @access public
-     * @param mixed $order_id
-     * @return string
-     */
-    function generate_esewa_form( $order_id ) {
-      global $woocommerce;
+                if ( 'yes' == $this->debug ){
+                    $this->log->add( 'esewa', 'Order not found.-'. print_r($_REQUEST, true) );
+                }
 
-      $order = new WC_Order( $order_id );
+                $order->update_status( 'on-hold', sprintf( __( 'Error occurred', 'esewa-payment-gateway-for-woocommerce' ) ) );
 
-      if ( $this->testmode == 'yes' ):
-        $esewa_adr = $this->testurl . '?';
-      else :
-        $esewa_adr = $this->liveurl . '?';
-      endif;
+            }
 
-      $esewa_args = $this->get_esewa_args( $order );
+            if ( 'yes' == $this->debug ){
+                $this->log->add( 'esewa', 'Payment complete.' );
+            }
 
-      $esewa_args_array = array();
+            $myaccount_page_id = get_option( 'woocommerce_myaccount_page_id' );
+            if ( $myaccount_page_id ) {
+                $myaccount_page_url = esc_url( get_permalink( $myaccount_page_id ) );
+            }
+            $redirect_url =  add_query_arg(array('q'=>'su', 'order' => $order->id ),$myaccount_page_url) ;
+            wp_redirect( $redirect_url );
+            exit;
+        }
 
-      foreach ($esewa_args as $key => $value) {
-        $esewa_args_array[] = '<input type="hidden" name="'.esc_attr( $key ).'" value="'.esc_attr( $value ).'" />';
-      }
+        /**
+         * get_esewa_order function.
+         *
+         * @access public
+         * @param mixed $posted
+         * @return void
+         */
+        function get_esewa_order( $params ) {
 
-      wc_enqueue_js( '
-        jQuery("body").block({
-            message: "' . esc_js( __( 'Thank you for your order. We are now redirecting you to eSewa to make payment.', 'esewa-payment-gateway-for-woocommerce' ) ) . '",
-            baseZ: 99999,
-            overlayCSS:
-            {
-              background: "#fff",
-              opacity: 0.6
-            },
-            css: {
-                  padding:        "20px",
-                  zindex:         "9999999",
-                  textAlign:      "center",
-                  color:          "#555",
-                  border:         "3px solid #aaa",
-                  backgroundColor:"#fff",
-                  cursor:         "wait",
-                  lineHeight:   "24px",
-              }
-          });
-        jQuery("#submit_esewa_payment_form").click();
-      ' );
+            $order_id = $params['oid'];
+            $order    = new WC_Order( $order_id );
+            if (!empty($order)) {
+                return $order;
+            }
+            if ( $this->debug=='yes' ){
+                $this->log->add( 'esewa', 'Error: Order Key does not match. #'. $params['oid'] );
+            }
+            return false;
+        }
 
-      return '<form action="'.esc_url( $esewa_adr ).'" method="post" id="esewa_payment_form" target="_top">
-          ' . implode( '', $esewa_args_array) . '
-          <input type="submit" class="button alt" id="submit_esewa_payment_form" value="' . __( 'Pay via eSewa', 'esewa-payment-gateway-for-woocommerce' ) . '" /> <a class="button cancel" href="'.esc_url( $order->get_cancel_order_url() ).'">'.__( 'Cancel order &amp; restore cart', 'esewa-payment-gateway-for-woocommerce' ).'</a>
-        </form>';
+        /**
+         * Add content to the WC emails.
+         *
+         * @access public
+         * @param WC_Order $order
+         * @param bool $sent_to_admin
+         * @return void
+         */
+        function email_instructions( $order, $sent_to_admin ) {
 
-    }
+            if ( $sent_to_admin ) {
+                return;
+            }
+
+            if ( $order->status !== 'on-hold') {
+                return;
+            }
+
+            if ( $order->payment_method !== 'esewa') {
+                return;
+            }
+
+            if ( $description = $this->get_description() ){
+                echo wpautop( wptexturize( $description ) );
+            }
+        }
+
+        /**
+         * Generate the eSewa button link
+         *
+         * @access public
+         * @param mixed $order_id
+         * @return string
+         */
+        function generate_esewa_form( $order_id ) {
+            global $woocommerce;
+
+            $order = new WC_Order( $order_id );
+
+            if ( $this->testmode == 'yes' ){
+                $esewa_adr = $this->testurl . '?';
+            }
+            else {
+                $esewa_adr = $this->liveurl . '?';
+            }
+
+            $esewa_args = $this->get_esewa_args( $order );
+
+            $esewa_args_array = array();
+
+            foreach ($esewa_args as $key => $value) {
+                $esewa_args_array[] = '<input type="hidden" name="'.esc_attr( $key ).'" value="'.esc_attr( $value ).'" />';
+            }
+
+            wc_enqueue_js( '
+            jQuery("body").block({
+                message: "' . esc_js( __( 'Thank you for your order. We are now redirecting you to eSewa to make payment.', 'esewa-payment-gateway-for-woocommerce' ) ) . '",
+                baseZ: 99999,
+                overlayCSS:
+                {
+                  background: "#fff",
+                  opacity: 0.6
+                },
+                css: {
+                      padding:        "20px",
+                      zindex:         "9999999",
+                      textAlign:      "center",
+                      color:          "#555",
+                      border:         "3px solid #aaa",
+                      backgroundColor:"#fff",
+                      cursor:         "wait",
+                      lineHeight:   "24px",
+                  }
+              });
+            jQuery("#submit_esewa_payment_form").click();
+            ' );
+
+            return '<form action="'.esc_url( $esewa_adr ).'" method="post" id="esewa_payment_form" target="_top">
+              ' . implode( '', $esewa_args_array) . '
+              <input type="submit" class="button alt" id="submit_esewa_payment_form" value="' . __( 'Pay via eSewa', 'esewa-payment-gateway-for-woocommerce' ) . '" /> <a class="button cancel" href="'.esc_url( $order->get_cancel_order_url() ).'">'.__( 'Cancel order &amp; restore cart', 'esewa-payment-gateway-for-woocommerce' ).'</a>
+            </form>';
+
+        }
+
         /**
          * Process the payment and return the result
          *
@@ -533,18 +549,16 @@ function woocommerce_esewa_init() {
     } // End Class.
 
 
-
-
-  /**
-  * Add this Gateway to WooCommerce.
-  **/
-   function woocommerce_add_esewa_gateway( $methods ) {
-      $methods[] = 'WC_Gateway_Esewa';
-      return $methods;
-   }
-
+    /**
+    * Add this Gateway to WooCommerce.
+    **/
+    function woocommerce_add_esewa_gateway( $methods ) {
+        $methods[] = 'WC_Gateway_Esewa';
+        return $methods;
+    }
    add_filter('woocommerce_payment_gateways', 'woocommerce_add_esewa_gateway' );
-}
+
+} // End function.
 
 if ( ! function_exists( 'esewa_transaction_status_message' ) ) :
     /**
