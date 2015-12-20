@@ -546,35 +546,32 @@ function woocommerce_esewa_init() {
    add_filter('woocommerce_payment_gateways', 'woocommerce_add_esewa_gateway' );
 }
 
+if ( ! function_exists( 'esewa_transaction_status_message' ) ) :
+    /**
+     * Show messages.
+     *
+     * @since 1.0.0
+     */
+    function esewa_transaction_status_message() {
 
-  /**
-   * Show Messages
-   *
-   * @access public
-   * @return void
-   */
-  function esewa_message( $order ) {
-    global $woocommerce;
+        $_REQUEST = stripslashes_deep( $_REQUEST );
 
-    $_REQUEST = stripslashes_deep( $_REQUEST );
+        if ( isset( $_REQUEST['q'] ) && ! empty( $_REQUEST['q'] ) ) {
 
-    if (isset($_REQUEST['q'])) {
-      if ('fu' == $_REQUEST['q'] ) {
+            if ( 'fu' === $_REQUEST['q'] ) {
+                wc_add_notice( __( 'Payment could not be completed!', 'esewa-payment-gateway-for-woocommerce' ), 'error' );
+            }
 
-        wc_add_notice(__( 'Payment could not be completed!', 'esewa-payment-gateway-for-woocommerce' ), 'error' );
-
-      }
-      if ('su' == $_REQUEST['q'] ) {
-        $msg_content = __( 'Payment Successful!', 'esewa-payment-gateway-for-woocommerce' );
-        if ( isset($_REQUEST['order']) && '' != $_REQUEST['order']   )  {
-          $view_url = esc_url( add_query_arg('order', $_REQUEST['order'], get_permalink( woocommerce_get_page_id( 'view_order' ) ) ) );
-          $msg_content .= '<a href="'.$view_url.'" class="button">' ;
-          $msg_content .= __( 'View Order', 'esewa-payment-gateway-for-woocommerce' );
-          $msg_content .= '</a>' ;
+            if ( 'su' === $_REQUEST['q'] ) {
+                $msg_content = __( 'Payment Successful!', 'esewa-payment-gateway-for-woocommerce' );
+                if ( isset( $_REQUEST['order'] ) && absint( $_REQUEST['order'] ) > 0 )  {
+                    $view_url = wc_get_endpoint_url( 'view-order', absint( $_REQUEST['order'] ), wc_get_page_permalink( 'myaccount' ) );
+                    $msg_content .= '<a href="' . esc_url( $view_url ) . '" class="button">' . __( 'View Order', 'esewa-payment-gateway-for-woocommerce' ) . '</a>' ;
+                }
+                wc_add_notice( $msg_content, 'success' );
+            }
         }
-        wc_add_notice( $msg_content, 'success' );
-      }
     }
+endif;
 
-  }
-  add_action( 'woocommerce_init',  'esewa_message' ) ;
+add_action( 'woocommerce_init',  'esewa_transaction_status_message' ) ;
