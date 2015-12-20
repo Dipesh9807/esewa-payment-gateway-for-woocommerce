@@ -134,9 +134,8 @@ function woocommerce_esewa_init() {
               'type' => 'checkbox',
               'label' => __( 'Enable logging', 'esewa-payment-gateway-for-woocommerce' ),
               'default' => 'no',
-              'description' => sprintf( __( 'Log eSewa events, inside %swc-logs/esewa-%s.txt%s', 'esewa-payment-gateway-for-woocommerce' ),
-                '<code>',
-                sanitize_file_name( wp_hash( 'esewa' ) ),'</code>'
+              'description' => sprintf( __( 'Log eSewa events, inside <code>%s</code>', 'esewa-payment-gateway-for-woocommerce' ),
+                wc_get_log_file_path( 'esewa' )
                 ),
             )
 			);
