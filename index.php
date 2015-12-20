@@ -8,6 +8,8 @@
  * Author URI: http://www.nilambar.net
  * License: GPL2
  * Text Domain: esewa-payment-gateway-for-woocommerce
+ *
+ * @package Esewa_Payment_Gateway_For_WooCommerce
  */
 
 // Exit if accessed directly.
@@ -17,6 +19,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 add_action( 'plugins_loaded', 'woocommerce_esewa_init', 0 );
 
+/**
+ * eSewa init.
+ *
+ * @since 1.0.0
+ */
 function woocommerce_esewa_init() {
 
 	if ( ! class_exists( 'WC_Payment_Gateway' ) ) {
@@ -44,11 +51,11 @@ function woocommerce_esewa_init() {
 			$this->icon                   = apply_filters( 'woocommerce_esewa_icon', WP_PLUGIN_URL . '/' . plugin_basename( dirname( __FILE__ ) ) . '/images/esewa.png' );
 			$this->has_fields             = false;
 
-			// Load the settings.
+			// Load settings.
 			$this->init_form_fields();
 			$this->init_settings();
 
-			// Define user set variables
+			// Define user set variables.
 			$this->title                = $this->get_option( 'title' );
 			$this->description          = $this->get_option( 'description' );
 			$this->liveurl              = 'https://esewa.com.np/epay/main';
@@ -59,21 +66,21 @@ function woocommerce_esewa_init() {
 			$this->testmode             = $this->get_option( 'testmode' );
 			$this->debug                = $this->get_option( 'debug' );
 
-			// Logs
-			if ( 'yes' == $this->debug ) {
+			// Logs.
+			if ( 'yes' === $this->debug ) {
 				$this->log = new WC_Logger();
 			}
 
-			// Actions
+			// Actions.
 			add_action( 'valid-esewa-standard-response', array( $this, 'successful_request' ) );
 			add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
 			add_action( 'woocommerce_receipt_esewa', array( $this, 'receipt_page' ) );
 			add_action( 'woocommerce_thankyou_esewa', array( $this, 'thankyou_page' ) );
 
-			// Customer Emails
+			// Customer Emails.
 			add_action( 'woocommerce_email_before_order_table', array( $this, 'email_instructions' ), 10, 2 );
 
-			// Payment listener/API hook
+			// Payment listener/API hook.
 			add_action( 'woocommerce_api_wc_gateway_esewa', array( $this, 'check_esewa_response' ) );
 
 			if ( ! $this->is_valid_for_use() ) {
@@ -82,67 +89,67 @@ function woocommerce_esewa_init() {
 		}
 
 		/**
-		 * Initialise Gateway Settings Form Fields
+		 * Initialise Gateway Settings Form Fields.
 		 *
 		 * @access public
 		 * @return void
 		 */
 		function init_form_fields() {
 
-			$this->form_fields = array(
-			'enabled' => array(
-							'title' => __( 'Enable/Disable', 'esewa-payment-gateway-for-woocommerce' ),
-							'type' => 'checkbox',
-							'label' => __( 'Enable eSewa Payment Method', 'esewa-payment-gateway-for-woocommerce' ),
-							'default' => 'yes',
-						),
-			'title' => array(
-							'title' => __( 'Title', 'esewa-payment-gateway-for-woocommerce' ),
-							'type' => 'text',
-							'description' => __( 'This controls the title which the user sees during checkout.', 'esewa-payment-gateway-for-woocommerce' ),
-							'default' => __( 'eSewa', 'esewa-payment-gateway-for-woocommerce' ),
-							'desc_tip'      => true,
-						),
-			'description' => array(
-							'title' => __( 'Customer Message', 'esewa-payment-gateway-for-woocommerce' ),
-							'type' => 'textarea',
-							'description' => __( 'Enter description of payment gateway', 'esewa-payment-gateway-for-woocommerce' ),
-							'default' => __( 'eSewa is the first online payment gateway of Nepal. It facilitates its users to pay and get paid online.', 'esewa-payment-gateway-for-woocommerce' ),
-						),
-			'merchant' => array(
-			  'title' => __( 'Merchant ID', 'esewa-payment-gateway-for-woocommerce' ),
-			  'type'      => 'text',
-			  'description' => __( 'Enter Merchant ID. Eg. 0000ETM', 'esewa-payment-gateway-for-woocommerce' ),
-			  'default' => '',
-			  'placeholder' => __( 'Enter Merchant ID', 'esewa-payment-gateway-for-woocommerce' ),
-			),
-			'testing' => array(
-			  'title' => __( 'For Developers', 'esewa-payment-gateway-for-woocommerce' ),
-			  'type' => 'title',
-			  'description' => '',
-			),
-			'testmode' => array(
-			  'title' => __( 'Test mode', 'esewa-payment-gateway-for-woocommerce' ),
-			  'type' => 'checkbox',
-			  'label' => __( 'Enable Test mode', 'esewa-payment-gateway-for-woocommerce' ),
-			  'default' => 'no',
-			  'description' => __( 'Used for development purpose', 'esewa-payment-gateway-for-woocommerce' ),
-			),
-			'debug' => array(
-			  'title' => __( 'Debug Log', 'esewa-payment-gateway-for-woocommerce' ),
-			  'type' => 'checkbox',
-			  'label' => __( 'Enable logging', 'esewa-payment-gateway-for-woocommerce' ),
-			  'default' => 'no',
-			  'description' => sprintf( __( 'Log eSewa events, inside <code>%s</code>', 'esewa-payment-gateway-for-woocommerce' ),
-				  wc_get_log_file_path( 'esewa' )
-			  ),
-			),
-			);
+            $this->form_fields = array(
+                'enabled' => array(
+                    'title'   => __( 'Enable/Disable', 'esewa-payment-gateway-for-woocommerce' ),
+                    'type'    => 'checkbox',
+                    'label'   => __( 'Enable eSewa Payment Method', 'esewa-payment-gateway-for-woocommerce' ),
+                    'default' => 'yes',
+                    ),
+                'title' => array(
+                    'title'       => __( 'Title', 'esewa-payment-gateway-for-woocommerce' ),
+                    'type'        => 'text',
+                    'description' => __( 'This controls the title which the user sees during checkout.', 'esewa-payment-gateway-for-woocommerce' ),
+                    'default'     => __( 'eSewa', 'esewa-payment-gateway-for-woocommerce' ),
+                    'desc_tip'    => true,
+                    ),
+                'description' => array(
+                    'title'       => __( 'Customer Message', 'esewa-payment-gateway-for-woocommerce' ),
+                    'type'        => 'textarea',
+                    'description' => __( 'Enter description of payment gateway', 'esewa-payment-gateway-for-woocommerce' ),
+                    'default'     => __( 'eSewa is the first online payment gateway of Nepal. It facilitates its users to pay and get paid online.', 'esewa-payment-gateway-for-woocommerce' ),
+                    ),
+                'merchant' => array(
+                    'title'       => __( 'Merchant ID', 'esewa-payment-gateway-for-woocommerce' ),
+                    'type'        => 'text',
+                    'description' => __( 'Enter Merchant ID. Eg. 0000ETM', 'esewa-payment-gateway-for-woocommerce' ),
+                    'default'     => '',
+                    'placeholder' => __( 'Enter Merchant ID', 'esewa-payment-gateway-for-woocommerce' ),
+                    ),
+                'testing' => array(
+                    'title' => __( 'For Developers', 'esewa-payment-gateway-for-woocommerce' ),
+                    'type' => 'title',
+                    'description' => '',
+                    ),
+                'testmode' => array(
+                    'title'       => __( 'Test mode', 'esewa-payment-gateway-for-woocommerce' ),
+                    'type'        => 'checkbox',
+                    'label'       => __( 'Enable Test mode', 'esewa-payment-gateway-for-woocommerce' ),
+                    'default'     => 'no',
+                    'description' => __( 'Used for development purpose', 'esewa-payment-gateway-for-woocommerce' ),
+                    ),
+                'debug' => array(
+                    'title' => __( 'Debug Log', 'esewa-payment-gateway-for-woocommerce' ),
+                    'type' => 'checkbox',
+                    'label' => __( 'Enable logging', 'esewa-payment-gateway-for-woocommerce' ),
+                    'default' => 'no',
+                    'description' => sprintf( __( 'Log eSewa events, inside <code>%s</code>', 'esewa-payment-gateway-for-woocommerce' ),
+                        wc_get_log_file_path( 'esewa' )
+                        ),
+                    ),
+                );
 
 		}
 
 		/**
-		 * Check if this gateway is enabled and available in the user's country
+		 * Check if this gateway is enabled and available in the user's country.
 		 *
 		 * @access public
 		 * @return bool
@@ -155,7 +162,7 @@ function woocommerce_esewa_init() {
 		}
 
 		/**
-		 * Admin Panel Options
+		 * Admin Panel Options.
 		 *
 		 * @access public
 		 * @return void
@@ -164,21 +171,17 @@ function woocommerce_esewa_init() {
 			?>
             <h3><?php _e( 'eSewa', 'esewa-payment-gateway-for-woocommerce' ); ?></h3>
             <p><?php _e( 'eSewa Payment Gateway', 'esewa-payment-gateway-for-woocommerce' ); ?></p>
-
             <?php if ( $this->is_valid_for_use() ) : ?>
-
-            <table class="form-table">
-            <?php
-			// Generate the HTML For the settings form.
-			$this->generate_settings_html();
-			?>
-            </table><!--/.form-table-->
+                <table class="form-table">
+                    <?php
+        			// Generate the HTML For the settings form.
+                    $this->generate_settings_html();
+                    ?>
+                </table>
             <?php else : ?>
-            <div class="inline error"><p><strong><?php _e( 'Gateway Disabled', 'esewa-payment-gateway-for-woocommerce' ); ?></strong>: <?php _e( 'eSewa does not support your store currency.', 'esewa-payment-gateway-for-woocommerce' ); ?></p></div>
-
-
+                <div class="inline error"><p><strong><?php _e( 'Gateway Disabled', 'esewa-payment-gateway-for-woocommerce' ); ?></strong>: <?php _e( 'eSewa does not support your store currency.', 'esewa-payment-gateway-for-woocommerce' ); ?></p></div>
+            <?php endif; ?>
             <?php
-			endif;
 		}
 
 		/**
@@ -194,7 +197,7 @@ function woocommerce_esewa_init() {
 		}
 
 		/**
-		 * Get eSewa Args for passing to the site
+		 * Get eSewa args for passing to the site.
 		 *
 		 * @access public
 		 * @param mixed $order
@@ -203,7 +206,7 @@ function woocommerce_esewa_init() {
 		function get_esewa_args( $order ) {
 			global $woocommerce;
 
-			if ( 'yes' == $this->debug ) {
+			if ( 'yes' === $this->debug ) {
 				$this->log->add( 'esewa', 'Generating payment form for order ' . $order->get_order_number() );
 			}
 
@@ -259,11 +262,11 @@ function woocommerce_esewa_init() {
 		function check_esewa_response_is_valid() {
 			global $woocommerce;
 
-			if ( 'yes' == $this->debug ) {
+			if ( 'yes' === $this->debug ) {
 				$this->log->add( 'esewa', 'Checking eSewa response is valid...' );
 			}
 
-			if ( $this->testmode == 'yes' ) {
+			if ( 'yes' === $this->testmode ) {
 				$esewa_adr = $this->testurl_verification;
 			} else {
 				$esewa_adr = $this->liveurl_verification;
@@ -272,34 +275,34 @@ function woocommerce_esewa_init() {
 			$_REQUEST = stripslashes_deep( $_REQUEST );
 
 			$params = array(
-				'amt' => $_REQUEST['amt'],
-				'pid' => $_REQUEST['oid'],
-				'rid' => $_REQUEST['refId'],
-				'scd' => $this -> merchant,
-				);
+                'amt' => $_REQUEST['amt'],
+                'pid' => $_REQUEST['oid'],
+                'rid' => $_REQUEST['refId'],
+                'scd' => $this -> merchant,
+			);
 
-			if ( 'yes' == $this->debug ) {
+			if ( 'yes' === $this->debug ) {
 				$this->log->add( 'esewa', 'Request Parameters: ' . print_r( $params, true ) );
 			}
 
 			$received_values = $params;
 
 			$eparams = array(
-				'body'      => $received_values,
-				'sslverify'   => false,
-				'timeout'     => 60,
-				'httpversion'   => '1.1',
-				'user-agent'  => 'WooCommerce/' . $woocommerce->version,
-				);
+                'body'        => $received_values,
+                'sslverify'   => false,
+                'timeout'     => 60,
+                'httpversion' => '1.1',
+                'user-agent'  => 'WooCommerce/' . $woocommerce->version,
+			);
 			$response = wp_remote_post( $esewa_adr, $eparams );
 
-			if ( 'yes' == $this->debug ) {
+			if ( 'yes' === $this->debug ) {
 				$this->log->add( 'esewa', 'eSewa Response: ' . print_r( $response, true ) );
 			}
 
 			// check to see if the request was valid.
 			if ( ! is_wp_error( $response ) && $response['response']['code'] >= 200 && $response['response']['code'] < 300  ) {
-				if ( 'yes' == $this->debug ) {
+				if ( 'yes' === $this->debug ) {
 					$this->log->add( 'esewa', 'Received valid response from eSewa' );
 				}
 
@@ -309,28 +312,26 @@ function woocommerce_esewa_init() {
 				if ( ! empty( $esewa_response_code ) ) {
 					$esewa_response_code = strtolower( $esewa_response_code );
 				}
-				if ( 'success' == $esewa_response_code ) {
+				if ( 'success' === $esewa_response_code ) {
 					return true;
 				}
 				return false;
-			}
+			} // End if.
 
-			if ( 'yes' == $this->debug ) {
+			if ( 'yes' === $this->debug ) {
 				$this->log->add( 'esewa', 'Received invalid response from eSewa' );
 				if ( is_wp_error( $response ) ) {
 					$this->log->add( 'esewa', 'Error response: ' . $response->get_error_message() );
 				}
 			}
-
 			return false;
 
 		}
 
 		/**
-		 * Successful Payment!
+		 * Successful Payment.
 		 *
 		 * @access public
-		 * @param array $posted
 		 * @return void
 		 */
 		function successful_request() {
@@ -342,7 +343,7 @@ function woocommerce_esewa_init() {
 
 			if ( $order ) {
 
-				if ( 'yes' == $this->debug ) {
+				if ( 'yes' === $this->debug ) {
 					$this->log->add( 'esewa', 'Found order #' . $order->id );
 				}
 
@@ -352,15 +353,14 @@ function woocommerce_esewa_init() {
 
 			} else {
 
-				if ( 'yes' == $this->debug ) {
+				if ( 'yes' === $this->debug ) {
 					$this->log->add( 'esewa', 'Order not found.-'. print_r( $_REQUEST, true ) );
 				}
-
 				$order->update_status( 'on-hold', sprintf( __( 'Error occurred', 'esewa-payment-gateway-for-woocommerce' ) ) );
 
 			}
 
-			if ( 'yes' == $this->debug ) {
+			if ( 'yes' === $this->debug ) {
 				$this->log->add( 'esewa', 'Payment complete.' );
 			}
 
@@ -383,11 +383,11 @@ function woocommerce_esewa_init() {
 		function get_esewa_order( $params ) {
 
 			$order_id = $params['oid'];
-			$order    = new WC_Order( $order_id );
+			$order = new WC_Order( $order_id );
 			if ( ! empty( $order ) ) {
 				return $order;
 			}
-			if ( $this->debug == 'yes' ) {
+			if ( 'yes' === $this->debug ) {
 				$this->log->add( 'esewa', 'Error: Order Key does not match. #'. $params['oid'] );
 			}
 			return false;
@@ -397,8 +397,8 @@ function woocommerce_esewa_init() {
 		 * Add content to the WC emails.
 		 *
 		 * @access public
-		 * @param WC_Order $order
-		 * @param bool     $sent_to_admin
+		 * @param WC_Order $order Order.
+		 * @param bool     $sent_to_admin Whether to send email to admin.
 		 * @return void
 		 */
 		function email_instructions( $order, $sent_to_admin ) {
@@ -421,7 +421,7 @@ function woocommerce_esewa_init() {
 		}
 
 		/**
-		 * Generate the eSewa button link
+		 * Generate the eSewa button link.
 		 *
 		 * @access public
 		 * @param mixed $order_id
@@ -432,7 +432,7 @@ function woocommerce_esewa_init() {
 
 			$order = new WC_Order( $order_id );
 
-			if ( $this->testmode == 'yes' ) {
+			if ( 'yes' === $this->testmode ) {
 				$esewa_adr = $this->testurl . '?';
 			} else {
 				$esewa_adr = $this->liveurl . '?';
@@ -443,53 +443,49 @@ function woocommerce_esewa_init() {
 			$esewa_args_array = array();
 
 			foreach ( $esewa_args as $key => $value ) {
-				$esewa_args_array[] = '<input type="hidden" name="'.esc_attr( $key ).'" value="'.esc_attr( $value ).'" />';
+				$esewa_args_array[] = '<input type="hidden" name="' . esc_attr( $key ) . '" value="' . esc_attr( $value ) . '" />';
 			}
 
 			wc_enqueue_js( '
-            jQuery("body").block({
-                message: "' . esc_js( __( 'Thank you for your order. We are now redirecting you to eSewa to make payment.', 'esewa-payment-gateway-for-woocommerce' ) ) . '",
-                baseZ: 99999,
-                overlayCSS:
-                {
-                  background: "#fff",
-                  opacity: 0.6
-                },
-                css: {
-                      padding:        "20px",
-                      zindex:         "9999999",
-                      textAlign:      "center",
-                      color:          "#555",
-                      border:         "3px solid #aaa",
-                      backgroundColor:"#fff",
-                      cursor:         "wait",
-                      lineHeight:   "24px",
-                  }
-              });
-            jQuery("#submit_esewa_payment_form").click();
+                jQuery("body").block({
+                    message: "' . esc_js( __( 'Thank you for your order. We are now redirecting you to eSewa to make payment.', 'esewa-payment-gateway-for-woocommerce' ) ) . '",
+                    baseZ: 99999,
+                    overlayCSS:
+                    {
+                      background: "#fff",
+                      opacity: 0.6
+                    },
+                    css: {
+                          padding:        "20px",
+                          zindex:         "9999999",
+                          textAlign:      "center",
+                          color:          "#555",
+                          border:         "3px solid #aaa",
+                          backgroundColor:"#fff",
+                          cursor:         "wait",
+                          lineHeight:   "24px",
+                      }
+                  });
+                jQuery("#submit_esewa_payment_form").click();
             ' );
 
-			return '<form action="'.esc_url( $esewa_adr ).'" method="post" id="esewa_payment_form" target="_top">
-              ' . implode( '', $esewa_args_array ) . '
-              <input type="submit" class="button alt" id="submit_esewa_payment_form" value="' . __( 'Pay via eSewa', 'esewa-payment-gateway-for-woocommerce' ) . '" /> <a class="button cancel" href="'.esc_url( $order->get_cancel_order_url() ).'">'.__( 'Cancel order &amp; restore cart', 'esewa-payment-gateway-for-woocommerce' ).'</a>
-            </form>';
-
+			return '<form action="' . esc_url( $esewa_adr ) . '" method="post" id="esewa_payment_form" target="_top">' . implode( '', $esewa_args_array ) . '<input type="submit" class="button alt" id="submit_esewa_payment_form" value="' . __( 'Pay via eSewa', 'esewa-payment-gateway-for-woocommerce' ) . '" /> <a class="button cancel" href="' . esc_url( $order->get_cancel_order_url() ) . '">' . __( 'Cancel order &amp; restore cart', 'esewa-payment-gateway-for-woocommerce' ) . '</a></form>';
 		}
 
 		/**
-		 * Process the payment and return the result
+		 * Process the payment and return the result.
 		 *
 		 * @access public
-		 * @param int $order_id
+		 * @param int $order_id Order ID.
 		 * @return array
 		 */
 		function process_payment( $order_id ) {
 
 			global $woocommerce;
 
-			if ( $this->merchant == '' ) {
+			if ( '' === $this->merchant ) {
 				$woocommerce -> add_error( __( 'eSewa is not setup correctly. Cannot proceed !', 'esewa-payment-gateway-for-woocommerce' ) );
-				if ( $this->debug == 'yes' ) {
+				if ( 'yes' === $this->debug ) {
 					$this->log->add( 'esewa', 'Merchant ID is empty.' );
 				}
 				return;
@@ -499,7 +495,7 @@ function woocommerce_esewa_init() {
 
 			$esewa_args = $this->get_esewa_args( $order );
 
-			if ( $this->testmode == 'yes' ) {
+			if ( 'yes' === $this->testmode ) {
 				$esewa_adr = $this->testurl;
 			} else {
 				$esewa_adr = $this->liveurl;
@@ -511,8 +507,8 @@ function woocommerce_esewa_init() {
 			}
 
 			return array(
-			'result'  => 'success',
-			'redirect'  => add_query_arg( 'order', $order->id, add_query_arg( 'key', $order->order_key, get_permalink( woocommerce_get_page_id( 'pay' ) ) ) ),
+                'result'   => 'success',
+                'redirect' => add_query_arg( 'order', $order->id, add_query_arg( 'key', $order->order_key, get_permalink( woocommerce_get_page_id( 'pay' ) ) ) ),
 			);
 
 		}
@@ -520,7 +516,7 @@ function woocommerce_esewa_init() {
 		/**
 		 * Output for the order received page.
 		 *
-		 * @access public
+		 * @param WC_Order $order Order object.
 		 * @return void
 		 */
 		function receipt_page( $order ) {
